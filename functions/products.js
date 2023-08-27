@@ -11,12 +11,40 @@ exports.handler = async (event, context, cb) => {
   try {
     // default olarak 20 ürün getiriyor, maxRecords: 200 diyerek 200 ürüne kadar getirebiliriz. Zaten max değerde 200.
     const response = await airtable.list({ maxRecords: 200 })
-    console.log('######')
-    console.log(response)
-    console.log('######')
+
+    const products = response.records.map((product) => {
+      const { id, fields } = product
+      const {
+        name,
+        featured,
+        price,
+        colors,
+        company,
+        description,
+        category,
+        shipping,
+        images,
+      } = fields
+
+      const { url } = images[0]
+
+      return {
+        id,
+        name,
+        price,
+        image: url,
+        featured,
+        colors,
+        company,
+        description,
+        category,
+        shipping,
+      }
+    })
+
     return {
       statusCode: 200,
-      body: 'products route',
+      body: JSON.stringify(products),
     }
   } catch (error) {
     console.log(error)

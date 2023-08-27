@@ -116,14 +116,14 @@ components/Hero.js
 components/Logo
 
 ```js
-import styled from 'styled-components';
+import styled from 'styled-components'
 const Logo = () => {
   return (
     <Wrapper>
       <span>Gadget</span>Junkie
     </Wrapper>
-  );
-};
+  )
+}
 
 const Wrapper = styled.h3`
   margin-bottom: 0;
@@ -131,9 +131,9 @@ const Wrapper = styled.h3`
   span {
     color: var(--clr-primary-5);
   }
-`;
+`
 
-export default Logo;
+export default Logo
 ```
 
 - replace in Navbar and Sidebar
@@ -192,6 +192,21 @@ AIRTABLE_BASE=
 AIRTABLE_TABLE=
 ```
 
+#### Token ID instead of API KEY
+
+- So the Airtable has moved away from API keys and it's not possible to create it anymore. You can create a 'Personal Access Token' and that will be your API Key.
+- You want to set your .env variables as:
+
+```js
+AIRTABLE_API_KEY = [Token ID Key]
+AIRTABLE_BASE = [ID of base]
+AIRTABLE_TABLE = [name of your table in Airtable]
+```
+
+- Now, when you look at your access tokens you will see a 'Token ID' and it will start with 'pat' and have random numbers and letters after it. THIS IS NOT YOUR API KEY!!! (Or not all of it at least)
+
+- When you created your access token you will have been shown your API Key and they ask you to copy it and tell you they will not share it again. You need to use this as your API Key. It begins with your 'Token ID' and then has even more characters after it. If you use this as your API Key your code should work!
+
 #### Serverless Functions
 
 - in functions create
@@ -203,8 +218,8 @@ exports.handler = async (event, context, cb) => {
   return {
     statusCode: 200,
     body: 'products route',
-  };
-};
+  }
+}
 ```
 
 - restart the server "npm run dev"
@@ -226,34 +241,34 @@ npm i airtable-node
 functions/products
 
 ```js
-const dotenv = require('dotenv');
-dotenv.config();
+const dotenv = require('dotenv')
+dotenv.config()
 
-const Airtable = require('airtable-node');
+const Airtable = require('airtable-node')
 const airtable = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
   .base(process.env.AIRTABLE_BASE)
-  .table(process.env.AIRTABLE_TABLE);
+  .table(process.env.AIRTABLE_TABLE)
 
 exports.handler = async function () {
   try {
-    const response = await airtable.list({ maxRecords: 200 });
+    const response = await airtable.list({ maxRecords: 200 })
 
-    console.log('#######');
-    console.log(response);
-    console.log('#######');
+    console.log('#######')
+    console.log(response)
+    console.log('#######')
 
     return {
       statusCode: 200,
       body: 'products route',
-    };
+    }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return {
       statusCode: 500,
       body: 'There was an error',
-    };
+    }
   }
-};
+}
 ```
 
 #### Refactor and Return Products
@@ -264,10 +279,10 @@ exports.handler = async function () {
 ```js
 exports.handler = async function () {
   try {
-    const response = await airtable.list({ maxRecords: 200 });
+    const response = await airtable.list({ maxRecords: 200 })
 
     const products = response.records.map((product) => {
-      const { id, fields } = product;
+      const { id, fields } = product
       const {
         name,
         featured,
@@ -278,8 +293,8 @@ exports.handler = async function () {
         category,
         shipping,
         images,
-      } = fields;
-      const { url } = images[0];
+      } = fields
+      const { url } = images[0]
       return {
         id,
         name,
@@ -291,21 +306,21 @@ exports.handler = async function () {
         category,
         shipping,
         image: url,
-      };
-    });
+      }
+    })
 
     return {
       statusCode: 200,
       body: JSON.stringify(products),
-    };
+    }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     return {
       statusCode: 500,
       body: 'There was an error',
-    };
+    }
   }
-};
+}
 ```
 
 #### Change products_url Value
@@ -313,33 +328,33 @@ exports.handler = async function () {
 utils/constants.js
 
 ```js
-export const products_url = '/.netlify/functions/products';
+export const products_url = '/.netlify/functions/products'
 // export const products_url = 'https://course-api.com/react-store-products'
 ```
 
 #### Fetch Single Product - Query Params
 
 ```js
-require('dotenv').config();
-const Airtable = require('airtable-node');
+require('dotenv').config()
+const Airtable = require('airtable-node')
 
 const airtable = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
   .base(process.env.AIRTABLE_BASE)
-  .table(process.env.AIRTABLE_TABLE);
+  .table(process.env.AIRTABLE_TABLE)
 
 exports.handler = async (event, context, cb) => {
-  const { id } = event.queryStringParameters;
+  const { id } = event.queryStringParameters
   if (id) {
     return {
       statusCode: 200,
       body: 'product',
-    };
+    }
   }
   return {
     statusCode: 400,
     body: 'Please provide product id',
-  };
-};
+  }
+}
 ```
 
 #### Fetch Single Product
@@ -350,41 +365,41 @@ exports.handler = async (event, context, cb) => {
 functions/single-product
 
 ```js
-require('dotenv').config();
-const Airtable = require('airtable-node');
+require('dotenv').config()
+const Airtable = require('airtable-node')
 
 const airtable = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY })
   .base(process.env.AIRTABLE_BASE)
-  .table(process.env.AIRTABLE_TABLE);
+  .table(process.env.AIRTABLE_TABLE)
 
 exports.handler = async (event, context, cb) => {
-  const { id } = event.queryStringParameters;
+  const { id } = event.queryStringParameters
   if (id) {
     try {
-      let product = await airtable.retrieve(id);
+      let product = await airtable.retrieve(id)
       if (product.error) {
         return {
           statusCode: 404,
           body: `No product with id: ${id}`,
-        };
+        }
       }
-      product = { id: product.id, ...product.fields };
+      product = { id: product.id, ...product.fields }
       return {
         statusCode: 200,
         body: JSON.stringify(product),
-      };
+      }
     } catch (error) {
       return {
         statusCode: 500,
         body: `Server Error`,
-      };
+      }
     }
   }
   return {
     statusCode: 400,
     body: 'Please provide product id',
-  };
-};
+  }
+}
 ```
 
 #### Change single_product_url Value
@@ -392,6 +407,6 @@ exports.handler = async (event, context, cb) => {
 utils/constants.js
 
 ```js
-export const single_product_url = `/.netlify/functions/single-product?id=`;
+export const single_product_url = `/.netlify/functions/single-product?id=`
 // export const single_product_url = `https://course-api.com/react-store-single-product?id=`;
 ```
